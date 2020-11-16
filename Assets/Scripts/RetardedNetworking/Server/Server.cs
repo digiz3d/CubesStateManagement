@@ -32,13 +32,15 @@ namespace RetardedNetworking
                     {
                         Debug.Log("[Server Thread] Accepting new client.");
                         TcpClient tcpListener = listener.AcceptTcpClient();
-                        
+
                         try
                         {
                             byte newClientId = ClientIdsManager.GetAvailableId();
                             ServerClient client = new ServerClient(newClientId, tcpListener);
                             _clientsList.Add(client);
-                            SendPacketToClient(PacketType.GIVE_CLIENT_ID, client, new byte[] { newClientId });
+                            Packet clientId = new Packet(PacketType.GIVE_CLIENT_ID, 0);
+                            clientId.Write(newClientId);
+                            SendPacketToClient(clientId, client);
                         }
                         catch (Exception e)
                         {
@@ -54,9 +56,12 @@ namespace RetardedNetworking
                     {
                         NetworkStream stream = client.NetworkStream;
 
-                        while (stream.CanWrite && client.packetsToSend.Count > 0)
+                        lock (client.packetsToSend)
                         {
-                            client.packetsToSend.Dequeue().SendToStream(stream);
+                            while (stream.CanWrite && client.packetsToSend.Count > 0)
+                            {
+                                client.packetsToSend.Dequeue().SendToStream(0, stream);
+                            }
                         }
 
                         while (stream.CanRead && stream.DataAvailable)
@@ -98,22 +103,11 @@ namespace RetardedNetworking
             _clientsList.Clear();
         }
 
-        public void SendPacketToClient(PacketType type, byte clientId, byte[] data)
+        public void SendPacketToClient(Packet packet, ServerClient client)
         {
-            ServerClient client = _clientsList.Find(c => c.Id == clientId);
-            SendPacketToClient(type, client, data);
-        }
-
-        public void SendPacketToClient(PacketType type, ServerClient client, byte[] data)
-        {
-            client.packetsToSend.Enqueue(new Packet(type, 0, data));
-        }
-
-        public void SendPacketToAllClients(PacketType type, byte[] data)
-        {
-            foreach (ServerClient client in _clientsList)
+            lock (client.packetsToSend)
             {
-                client.packetsToSend.Enqueue(new Packet(type, client.Id, data));
+                client.packetsToSend.Enqueue(packet);
             }
         }
     }

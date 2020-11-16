@@ -8,7 +8,8 @@ namespace RetardedNetworking
         {
             client.Id = pck.ReadByte();
             Log($"The server send me my id = {client.Id}");
-            client.SendPacketToServer(PacketType.THANKS, new byte[0]);
+            Packet thanks = new Packet(PacketType.THANKS, client.Id);
+            client.SendPacketToServer(thanks);
         }
 
         private static void Log(string str)

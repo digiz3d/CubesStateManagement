@@ -20,18 +20,17 @@ namespace RetardedNetworking
         }
         #endregion Singleton
 
-        private delegate void PacketHandler(Packet pck, Server server, Client client);
-
         public bool IsClient { get; internal set; }
         private Client _client;
         private Queue<Packet> _clientReceivedPackets = new Queue<Packet>();
-        private Dictionary<PacketType, PacketHandler> _clientPacketHandlers = new Dictionary<PacketType, PacketHandler>();
-
+        private Dictionary<PacketType, ClientPacketHandler> _clientPacketHandlers = new Dictionary<PacketType, ClientPacketHandler>();
+        private delegate void ClientPacketHandler(Packet packet, Server server, Client client);
 
         public bool IsServer { get; internal set; }
         private Server _server;
         private Queue<Packet> _serverReceivedpackets = new Queue<Packet>();
-        private Dictionary<PacketType, PacketHandler> _serverPacketHandlers = new Dictionary<PacketType, PacketHandler>();
+        private Dictionary<PacketType, ServerPacketHandler> _serverPacketHandlers = new Dictionary<PacketType, ServerPacketHandler>();
+        private delegate void ServerPacketHandler(Packet packet, Server server, Client client);
 
         public bool IsHost { get; internal set; }
 
@@ -66,7 +65,6 @@ namespace RetardedNetworking
                     while (_serverReceivedpackets.Count > 0)
                     {
                         Packet msg = _serverReceivedpackets.Dequeue();
-
                         if (_serverPacketHandlers.ContainsKey(msg.Type))
                         {
                             _serverPacketHandlers[msg.Type](msg, _server, _client);
@@ -162,10 +160,10 @@ namespace RetardedNetworking
 
         private void InitializePacketHandlers()
         {
-            _clientPacketHandlers = new Dictionary<PacketType, PacketHandler>() {
+            _clientPacketHandlers = new Dictionary<PacketType, ClientPacketHandler>() {
                 { PacketType.GIVE_CLIENT_ID, ClientHandler.GetMyClientId }
             };
-            _serverPacketHandlers = new Dictionary<PacketType, PacketHandler>(){
+            _serverPacketHandlers = new Dictionary<PacketType, ServerPacketHandler>(){
                 { PacketType.THANKS, ServerHandler.ClientSaidThanks }
             };
         }

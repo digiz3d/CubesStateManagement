@@ -34,9 +34,12 @@ namespace RetardedNetworking
 
                 while (!_stopping)
                 {
-                    if (stream.CanWrite && _packetsToSend.Count > 0)
+                    lock (_packetsToSend)
                     {
-                        _packetsToSend.Dequeue().SendToStream(stream);
+                        if (stream.CanWrite && _packetsToSend.Count > 0)
+                        {
+                            _packetsToSend.Dequeue().SendToStream(Id, stream);
+                        }
                     }
 
                     if (stream.CanRead && stream.DataAvailable)
@@ -67,9 +70,12 @@ namespace RetardedNetworking
             _stopping = false;
         }
 
-        public void SendPacketToServer(PacketType type, byte[] data)
+        public void SendPacketToServer(Packet packet)
         {
-            _packetsToSend.Enqueue(new Packet(type, Id, data));
+            lock (_packetsToSend)
+            {
+                _packetsToSend.Enqueue(packet);
+            }
         }
     }
 }

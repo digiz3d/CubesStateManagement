@@ -13,33 +13,18 @@ namespace RetardedNetworking
         private const byte headerSize = sizeof(byte) + sizeof(byte) + sizeof(int);
         public PacketType Type { private set; get; }
         public byte SenderClientId { private set; get; }
-        private List<byte> buffer = new List<byte>(headerSize);
+        private readonly List<byte> buffer = new List<byte>();
         private int readPos = 0;
 
-        public static Packet ReadFrom(NetworkStream stream)
-        {
-            byte[] headerBuffer = new byte[headerSize];
-            stream.Read(headerBuffer, 0, headerSize);
-
-            PacketType type = (PacketType)headerBuffer[0];
-            byte clientId = headerBuffer[1];
-
-            int dataLength = BitConverter.ToInt32(headerBuffer, 2 * sizeof(byte));
-            byte[] data = new byte[dataLength];
-
-            stream.Read(data, 0, dataLength);
-
-            return new Packet(type, clientId, data);
-        }
-
-        public Packet(PacketType type, byte senderId, byte[] data)
+        public Packet(PacketType type, byte senderId)
         {
             Type = type;
-            buffer.Add((byte)type);
             SenderClientId = senderId;
-            buffer.Add(senderId);
+        }
+
+        public Packet(PacketType type, byte senderId, byte[] data) : this(type, senderId)
+        {
             buffer.AddRange(data);
-            readPos = 2;
         }
 
         public void Write(byte data)
@@ -49,7 +34,7 @@ namespace RetardedNetworking
         public byte ReadByte()
         {
             byte val = buffer[readPos];
-            readPos++;
+            readPos += sizeof(byte);
             return val;
         }
 
@@ -223,15 +208,35 @@ namespace RetardedNetworking
             Vector3 pos = ReadVector3();
             Quaternion rot = ReadQuaternion();
 
-
             return new PlayerState(id, pos, rot);
         }
 
-        public void SendToStream(NetworkStream stream)
+        public static Packet ReadFrom(NetworkStream stream)
         {
-            int len = buffer.Count;
+            byte[] headerBuffer = new byte[headerSize];
+            stream.Read(headerBuffer, 0, headerSize);
+
+            PacketType type = (PacketType)headerBuffer[0];
+            byte clientId = headerBuffer[1];
+
+            int dataLength = BitConverter.ToInt32(headerBuffer, 2 * sizeof(byte));
+
+            byte[] data = new byte[dataLength];
+            if (dataLength > 0)
+                stream.Read(data, 0, dataLength);
+            Debug.Log($"headerBuffer = {BitConverter.ToString(headerBuffer)}, data = {BitConverter.ToString(data)} (dataLength={dataLength})");
+
+            return new Packet(type, clientId, data);
+        }
+
+        public void SendToStream(byte senderClientId, NetworkStream stream)
+        {
+            buffer.Insert(0, (byte)Type);
+            buffer.Insert(1, senderClientId);
+            int len = buffer.Count - 2 * sizeof(byte);
             buffer.InsertRange(2, BitConverter.GetBytes(len));
             byte[] bytes = buffer.ToArray();
+            Debug.Log($"Sending {BitConverter.ToString(bytes)}");
             stream.Write(bytes, 0, bytes.Length);
         }
     }

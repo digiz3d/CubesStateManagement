@@ -26,34 +26,11 @@ public class PlayerInput : MonoBehaviour
         NetworkManager n = NetworkManager.Instance;
         if (n == null) return;
 
-        Debug.Log("every time");
-
-        string res = "";
-
-        if (textServer == null)
-        {
-            res += "textServer null & ";
-        }
-        if (textClient == null)
-        {
-            res += "textClient null & ";
-        }
-        if (textHost == null)
-        {
-            res += "textHost null & ";
-        }
-
-        if (res != "")
-        {
-            Debug.Log(res);
-            return;
-        }
-
         textServer.text = "IsServer = " + (n.IsServer);
         textServer.color = n.IsServer ? Color.green : Color.red;
         textClient.text = "IsClient = " + (n.IsClient);
         textClient.color = n.IsClient ? Color.green : Color.red;
-        textHost.text = "IsHost = " + (n.IsServer && n.IsClient);
+        textHost.text = "IsHost = " + (n.IsHost);
         textHost.color = n.IsHost ? Color.green : Color.red;
     }
 
