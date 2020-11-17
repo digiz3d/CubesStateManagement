@@ -4,6 +4,7 @@
     {
         GIVE_CLIENT_ID = 5,
         THANKS,
-        SPAWN_PLAYER
+        GIVE_CLIENT_GAME_STATE,
+        SPAWN_PLAYER,
     }
 }

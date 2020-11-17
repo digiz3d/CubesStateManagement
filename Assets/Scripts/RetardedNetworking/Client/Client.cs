@@ -38,7 +38,7 @@ namespace RetardedNetworking
                     {
                         if (stream.CanWrite && _packetsToSend.Count > 0)
                         {
-                            _packetsToSend.Dequeue().SendToStream(Id, stream);
+                            _packetsToSend.Dequeue().SendToStream(stream, Id);
                         }
                     }
 

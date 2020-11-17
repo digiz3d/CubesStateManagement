@@ -38,7 +38,7 @@ namespace RetardedNetworking
                             byte newClientId = ClientIdsManager.GetAvailableId();
                             ServerClient client = new ServerClient(newClientId, tcpListener);
                             _clientsList.Add(client);
-                            Packet clientId = new Packet(PacketType.GIVE_CLIENT_ID, 0);
+                            Packet clientId = new Packet(PacketType.GIVE_CLIENT_ID);
                             clientId.Write(newClientId);
                             SendPacketToClient(clientId, client);
                         }
@@ -60,7 +60,7 @@ namespace RetardedNetworking
                         {
                             while (stream.CanWrite && client.packetsToSend.Count > 0)
                             {
-                                client.packetsToSend.Dequeue().SendToStream(0, stream);
+                                client.packetsToSend.Dequeue().SendToStream(stream);
                             }
                         }
 
@@ -103,11 +103,27 @@ namespace RetardedNetworking
             _clientsList.Clear();
         }
 
+        public void SendPacketToClient(Packet packet, byte clientId)
+        {
+            SendPacketToClient(packet, _clientsList.Find(client => client.Id == clientId));
+        }
+
         public void SendPacketToClient(Packet packet, ServerClient client)
         {
             lock (client.packetsToSend)
             {
                 client.packetsToSend.Enqueue(packet);
+            }
+        }
+
+        public void SendPacketToAllClients(Packet packet)
+        {
+            foreach (ServerClient client in _clientsList)
+            {
+                lock (client.packetsToSend)
+                {
+                    client.packetsToSend.Enqueue(packet);
+                }
             }
         }
     }

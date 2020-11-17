@@ -8,7 +8,10 @@ namespace RetardedNetworking
         public static void ClientSaidThanks(Packet packet, Server server, Client client)
         {
             Log($"The client {packet.SenderClientId} said thanks.");
-            GameStateManager.Instance.AddPlayer(packet.SenderClientId, Vector3.zero, Quaternion.identity);
+            GameStateManager.UpsertPlayer(packet.SenderClientId, Vector3.zero, Quaternion.identity);
+            Packet gameInfo = new Packet(PacketType.GIVE_CLIENT_GAME_STATE);
+            gameInfo.Write(GameStateManager.Instance.gameState);
+            server.SendPacketToAllClients(gameInfo);
         }
 
         private static void Log(string str)

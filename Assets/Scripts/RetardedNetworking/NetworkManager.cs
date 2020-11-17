@@ -161,7 +161,9 @@ namespace RetardedNetworking
         private void InitializePacketHandlers()
         {
             _clientPacketHandlers = new Dictionary<PacketType, ClientPacketHandler>() {
-                { PacketType.GIVE_CLIENT_ID, ClientHandler.GetMyClientId }
+                { PacketType.GIVE_CLIENT_ID, ClientHandler.GetMyClientId },
+                { PacketType.GIVE_CLIENT_GAME_STATE, ClientHandler.GetGameState }
+
             };
             _serverPacketHandlers = new Dictionary<PacketType, ServerPacketHandler>(){
                 { PacketType.THANKS, ServerHandler.ClientSaidThanks }

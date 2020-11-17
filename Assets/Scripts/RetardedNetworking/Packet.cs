@@ -16,14 +16,14 @@ namespace RetardedNetworking
         private readonly List<byte> buffer = new List<byte>();
         private int readPos = 0;
 
-        public Packet(PacketType type, byte senderId)
+        public Packet(PacketType type)
         {
             Type = type;
-            SenderClientId = senderId;
         }
 
-        public Packet(PacketType type, byte senderId, byte[] data) : this(type, senderId)
+        public Packet(PacketType type, byte senderId, byte[] data) : this(type)
         {
+            SenderClientId = senderId;
             buffer.AddRange(data);
         }
 
@@ -224,18 +224,21 @@ namespace RetardedNetworking
             byte[] data = new byte[dataLength];
             if (dataLength > 0)
                 stream.Read(data, 0, dataLength);
+
             Debug.Log($"headerBuffer = {BitConverter.ToString(headerBuffer)}, data = {BitConverter.ToString(data)} (dataLength={dataLength})");
 
             return new Packet(type, clientId, data);
         }
 
-        public void SendToStream(byte senderClientId, NetworkStream stream)
+        public void SendToStream(NetworkStream stream, byte senderClientId = 0)
         {
-            buffer.Insert(0, (byte)Type);
-            buffer.Insert(1, senderClientId);
-            int len = buffer.Count - 2 * sizeof(byte);
-            buffer.InsertRange(2, BitConverter.GetBytes(len));
-            byte[] bytes = buffer.ToArray();
+            List<byte> bufferToSend = new List<byte>(buffer.ToArray());
+            bufferToSend.Insert(0, (byte)Type);
+            bufferToSend.Insert(1, senderClientId);
+            int len = bufferToSend.Count - 2 * sizeof(byte);
+            Debug.Log($"[Packet:SendToStream] len = {len}");
+            bufferToSend.InsertRange(2, BitConverter.GetBytes(len));
+            byte[] bytes = bufferToSend.ToArray();
             Debug.Log($"Sending {BitConverter.ToString(bytes)}");
             stream.Write(bytes, 0, bytes.Length);
         }

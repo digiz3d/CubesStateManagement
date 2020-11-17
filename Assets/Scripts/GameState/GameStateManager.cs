@@ -27,8 +27,8 @@ namespace Assets.Scripts.GameState
         void Start()
         {
             gameState = new GameState();
-            AddLocalPlayer(Random.Range(0, 1000000), Vector3.zero, Quaternion.identity);
-            SpawnRandomPlayer();
+            // AddLocalPlayer(Random.Range(0, 1000000), Vector3.zero, Quaternion.identity);
+            // SpawnRandomPlayer();
             // InvokeRepeating("SpawnRandomPlayer", 0.25f, 0.25f);
         }
 
@@ -47,7 +47,7 @@ namespace Assets.Scripts.GameState
                 }
             }
 
-            gameState.playersById[5].position += new Vector3(0, 0, 1) * Time.deltaTime;
+            // gameState.playersById[5].position += new Vector3(0, 0, 1) * Time.deltaTime;
         }
 
         public void AddLocalPlayer(int id, Vector3 position, Quaternion rotation)
@@ -58,12 +58,12 @@ namespace Assets.Scripts.GameState
 
         public void SpawnRandomPlayer()
         {
-            AddPlayer(5, new Vector3(Random.Range(-20, 20), 0, Random.Range(-20, 20)), Quaternion.identity);
+            UpsertPlayer(5, new Vector3(Random.Range(-20, 20), 0, Random.Range(-20, 20)), Quaternion.identity);
         }
 
-        public void AddPlayer(int id, Vector3 position, Quaternion rotation)
+        public static void UpsertPlayer(int id, Vector3 position, Quaternion rotation)
         {
-            gameState.AddPlayer(id, position, rotation);
+            Instance.gameState.AddPlayer(id, position, rotation);
         }
 
         public static GameState GetState()
@@ -71,9 +71,9 @@ namespace Assets.Scripts.GameState
             return Instance.gameState;
         }
 
-        public static void SetState(GameState state)
+        public static void SetGameState(GameState nextState)
         {
-            Instance.gameState = state;
+            Instance.gameState = nextState;
         }
     }
 }
