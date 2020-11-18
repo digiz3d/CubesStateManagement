@@ -34,7 +34,8 @@ namespace RetardedNetworking
 
         public bool IsHost { get; internal set; }
 
-        private bool IsStarted => IsClient || IsHost || IsServer;
+        private bool IsStarted => IsHost;
+        //private bool IsStarted => IsClient || IsHost || IsServer;
 
 
         private void Update()

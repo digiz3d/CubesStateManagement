@@ -163,7 +163,7 @@ namespace RetardedNetworking
         public GameState ReadGameState()
         {
             int currentPlayerId = ReadInt();
-            List<PlayerState> players = ReadListPlayerState();
+            Dictionary<int,PlayerState> players = ReadDictionaryPlayerState();
             string serverName = ReadString();
 
             return new GameState()
@@ -174,25 +174,27 @@ namespace RetardedNetworking
             };
         }
 
-        public void Write(List<PlayerState> players)
+        public void Write(Dictionary<int, PlayerState> players)
         {
             int len = players.Count;
             Write(len);
-            foreach (PlayerState player in players)
+            foreach (KeyValuePair<int, PlayerState> kvp in players)
             {
-                Write(player);
+                Write(kvp.Key);
+                Write(kvp.Value);
             }
         }
 
-        public List<PlayerState> ReadListPlayerState()
+        public Dictionary<int, PlayerState> ReadDictionaryPlayerState()
         {
-            List<PlayerState> list = new List<PlayerState>();
+            Dictionary<int, PlayerState> dictionary = new Dictionary<int, PlayerState>();
             int len = ReadInt();
             for (int i = 0; i < len; i++)
             {
-                list.Add(ReadPlayerState());
+
+                dictionary.Add(ReadInt(), ReadPlayerState());
             }
-            return list;
+            return dictionary;
         }
 
         public void Write(PlayerState player)
@@ -225,7 +227,7 @@ namespace RetardedNetworking
             if (dataLength > 0)
                 stream.Read(data, 0, dataLength);
 
-            Debug.Log($"headerBuffer = {BitConverter.ToString(headerBuffer)}, data = {BitConverter.ToString(data)} (dataLength={dataLength})");
+            //Debug.Log($"headerBuffer = {BitConverter.ToString(headerBuffer)}, data = {BitConverter.ToString(data)} (dataLength={dataLength})");
 
             return new Packet(type, clientId, data);
         }
@@ -236,10 +238,10 @@ namespace RetardedNetworking
             bufferToSend.Insert(0, (byte)Type);
             bufferToSend.Insert(1, senderClientId);
             int len = bufferToSend.Count - 2 * sizeof(byte);
-            Debug.Log($"[Packet:SendToStream] len = {len}");
+            //Debug.Log($"[Packet:SendToStream] len = {len}");
             bufferToSend.InsertRange(2, BitConverter.GetBytes(len));
             byte[] bytes = bufferToSend.ToArray();
-            Debug.Log($"Sending {BitConverter.ToString(bytes)}");
+            //Debug.Log($"Sending {BitConverter.ToString(bytes)}");
             stream.Write(bytes, 0, bytes.Length);
         }
     }

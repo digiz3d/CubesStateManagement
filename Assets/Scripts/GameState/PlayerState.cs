@@ -7,7 +7,6 @@ namespace Assets.Scripts.GameState
         public readonly int id;
         public Vector3 position;
         public Quaternion rotation;
-        public GameObject gameObject;
 
         public PlayerState(int id, Vector3 position, Quaternion rotation)
         {

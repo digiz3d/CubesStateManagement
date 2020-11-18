@@ -11,7 +11,7 @@ public class Puppet : MonoBehaviour
     void Update()
     {
         PlayerState player;
-        if (GameStateManager.GetState().playersById.TryGetValue(subscribedPlayerId, out player))
+        if (GameStateManager.GetState().players.TryGetValue(subscribedPlayerId, out player))
         {
             transform.position = player.position;
             transform.rotation = player.rotation;
