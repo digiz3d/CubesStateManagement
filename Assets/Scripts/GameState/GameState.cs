@@ -5,24 +5,32 @@ namespace Assets.Scripts.GameState
 {
     public class GameState
     {
-        public int currentPlayerId = 0;
-        public Dictionary<int, PlayerState> players;
+        public byte currentPlayerId = 0;
+        public Dictionary<byte, PlayerState> players;
         public string serverName = "My server";
 
         public GameState()
         {
-            players = new Dictionary<int, PlayerState>();
+            players = new Dictionary<byte, PlayerState>();
         }
 
-        public void SetCurrentPlayerId(int id)
+        public void SetCurrentPlayerId(byte id)
         {
             currentPlayerId = id;
         }
 
-        public void UpsertPlayer(int id, Vector3 position, Quaternion rotation)
+        public void UpsertPlayer(byte id, Vector3 position, Quaternion rotation)
         {
-            PlayerState p = new PlayerState(id, position, rotation);
-            players.Add(id, p);
+            if (players.ContainsKey(id))
+            {
+                players[id].position = position;
+                players[id].rotation = rotation;
+            }
+            else
+            {
+                PlayerState p = new PlayerState(id, position, rotation);
+                players.Add(id, p);
+            }
         }
     }
 }

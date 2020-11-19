@@ -45,7 +45,7 @@ namespace RetardedNetworking
         public byte[] ReadBytes(int quantity)
         {
             byte[] val = buffer.GetRange(readPos, quantity).ToArray();
-            readPos += val.Length;
+            readPos += quantity;
             return val;
         }
 
@@ -59,11 +59,11 @@ namespace RetardedNetworking
             readPos += sizeof(bool);
             return val;
         }
+
         public void Write(short data)
         {
             buffer.AddRange(BitConverter.GetBytes(data));
         }
-
         public short ReadShort()
         {
             short val = BitConverter.ToInt16(buffer.GetRange(readPos, sizeof(short)).ToArray(), 0);
@@ -75,7 +75,6 @@ namespace RetardedNetworking
         {
             buffer.AddRange(BitConverter.GetBytes(data));
         }
-
         public int ReadInt()
         {
             int val = BitConverter.ToInt32(buffer.GetRange(readPos, sizeof(int)).ToArray(), 0);
@@ -87,7 +86,6 @@ namespace RetardedNetworking
         {
             buffer.AddRange(BitConverter.GetBytes(data));
         }
-
         public float ReadFloat()
         {
             float val = BitConverter.ToSingle(buffer.GetRange(readPos, sizeof(float)).ToArray(), 0);
@@ -153,17 +151,17 @@ namespace RetardedNetworking
 
 
 
-        public void Write(GameState gameState)
+        public void WriteGameState(GameState gameState)
         {
             Write(gameState.currentPlayerId);
-            Write(gameState.players);
+            WritePlayersDictionary(gameState.players);
             Write(gameState.serverName);
         }
 
         public GameState ReadGameState()
         {
-            int currentPlayerId = ReadInt();
-            Dictionary<int,PlayerState> players = ReadDictionaryPlayerState();
+            byte currentPlayerId = ReadByte();
+            Dictionary<byte, PlayerState> players = ReadPlayersDictionary();
             string serverName = ReadString();
 
             return new GameState()
@@ -174,30 +172,30 @@ namespace RetardedNetworking
             };
         }
 
-        public void Write(Dictionary<int, PlayerState> players)
+        public void WritePlayersDictionary(Dictionary<byte, PlayerState> players)
         {
             int len = players.Count;
             Write(len);
-            foreach (KeyValuePair<int, PlayerState> kvp in players)
+            foreach (KeyValuePair<byte, PlayerState> kvp in players)
             {
                 Write(kvp.Key);
-                Write(kvp.Value);
+                WritePlayerState(kvp.Value);
             }
         }
 
-        public Dictionary<int, PlayerState> ReadDictionaryPlayerState()
+        public Dictionary<byte, PlayerState> ReadPlayersDictionary()
         {
-            Dictionary<int, PlayerState> dictionary = new Dictionary<int, PlayerState>();
+            Dictionary<byte, PlayerState> dictionary = new Dictionary<byte, PlayerState>();
             int len = ReadInt();
             for (int i = 0; i < len; i++)
             {
 
-                dictionary.Add(ReadInt(), ReadPlayerState());
+                dictionary.Add(ReadByte(), ReadPlayerState());
             }
             return dictionary;
         }
 
-        public void Write(PlayerState player)
+        public void WritePlayerState(PlayerState player)
         {
             Write(player.id);
             Write(player.position);
@@ -206,7 +204,7 @@ namespace RetardedNetworking
 
         public PlayerState ReadPlayerState()
         {
-            int id = ReadInt();
+            byte id = ReadByte();
             Vector3 pos = ReadVector3();
             Quaternion rot = ReadQuaternion();
 
@@ -227,7 +225,7 @@ namespace RetardedNetworking
             if (dataLength > 0)
                 stream.Read(data, 0, dataLength);
 
-            //Debug.Log($"headerBuffer = {BitConverter.ToString(headerBuffer)}, data = {BitConverter.ToString(data)} (dataLength={dataLength})");
+            // Debug.Log($"headerBuffer = {BitConverter.ToString(headerBuffer)}, data = {BitConverter.ToString(data)} (dataLength={dataLength})");
 
             return new Packet(type, clientId, data);
         }

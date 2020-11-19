@@ -21,7 +21,7 @@ namespace Assets.Scripts.GameState
         #endregion Singleton
 
         public GameState gameState;
-        public Dictionary<int, GameObject> playersReconciliation = new Dictionary<int, GameObject>();
+        private Dictionary<byte, GameObject> playersReconciliation = new Dictionary<byte, GameObject>();
         public GameObject playerPrefab;
         public GameObject puppetPrefab;
         public Transform playersContainer;
@@ -29,54 +29,49 @@ namespace Assets.Scripts.GameState
         void Start()
         {
             gameState = new GameState();
-            // AddLocalPlayer(Random.Range(0, 1000000), Vector3.zero, Quaternion.identity);
-            // SpawnRandomPlayer();
-            // InvokeRepeating("SpawnRandomPlayer", 0.25f, 0.25f);
         }
 
-        // Update is called once per frame
         void Update()
         {
-            foreach (KeyValuePair<int,PlayerState> kvp in gameState.players)
+            foreach (KeyValuePair<byte, PlayerState> kvp in gameState.players)
             {
                 PlayerState playerState = kvp.Value;
                 if (!playersReconciliation.ContainsKey(kvp.Key))
                 {
+                    Debug.Log($"{playerState.id} == {gameState.currentPlayerId}");
                     GameObject prefab = playerState.id == gameState.currentPlayerId ? playerPrefab : puppetPrefab;
                     GameObject go = Instantiate(prefab, playerState.position, playerState.rotation, playersContainer);
                     Puppet puppet = go.GetComponent<Puppet>();
                     if (puppet) puppet.SubscribeToPlayerId(playerState.id);
+                    PlayerInput playerInput = go.GetComponent<PlayerInput>();
+                    if (playerInput) playerInput.AttachToPlayer(playerState.id);
                     playersReconciliation.Add(kvp.Key, go);
                 }
             }
-
-            // gameState.players[5].position += new Vector3(0, 0, 1) * Time.deltaTime;
         }
 
-        public void AddLocalPlayer(int id, Vector3 position, Quaternion rotation)
+        public static void SetCurrentPlayerId(byte id)
         {
-            gameState.SetCurrentPlayerId(id);
-            gameState.UpsertPlayer(id, position, rotation);
+            Instance.gameState.SetCurrentPlayerId(id);
         }
 
-        public void SpawnRandomPlayer()
-        {
-            UpsertPlayer(5, new Vector3(Random.Range(-20, 20), 0, Random.Range(-20, 20)), Quaternion.identity);
-        }
-
-        public static void UpsertPlayer(int id, Vector3 position, Quaternion rotation)
+        public static void UpsertPlayer(byte id, Vector3 position, Quaternion rotation)
         {
             Instance.gameState.UpsertPlayer(id, position, rotation);
-        }
-
-        public static GameState GetState()
-        {
-            return Instance.gameState;
         }
 
         public static void SetGameState(GameState nextState)
         {
             Instance.gameState = nextState;
+        }
+
+        public static void Move(Vector3 position, Quaternion rotation)
+        {
+            GameState gameState = Instance.gameState;
+            byte playerId = gameState.currentPlayerId;
+            gameState.players[playerId].position = position;
+            gameState.players[playerId].rotation = rotation;
+            RetardedNetworking.NetworkManager.Instance.ClientMove(position, rotation);
         }
     }
 }

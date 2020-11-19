@@ -1,69 +1,31 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
-using RetardedNetworking;
+using Assets.Scripts.GameState;
 
 public class PlayerInput : MonoBehaviour
 {
-    [SerializeField]
-    private Text textServer;
-    [SerializeField]
-    private Text textClient;
-    [SerializeField]
-    private Text textHost;
+    byte attachedToPlayerId;
+    const float maxTickRate = 128f;
+    float timeElapsedSinceLastTick = 0;
 
-    private void Update()
+    void Update()
     {
+        float x = Input.GetAxis("Horizontal");
+        float y = Input.GetAxis("Vertical");
 
-        if (Input.GetKeyUp(KeyCode.S))
-            ToggleServer();
+        gameObject.transform.Translate(x, 0, y);
 
-        if (Input.GetKeyUp(KeyCode.C))
-            ToggleClient();
+        timeElapsedSinceLastTick += Time.deltaTime;
 
-        if (Input.GetKeyUp(KeyCode.H))
-            ToggleHost();
-
-        NetworkManager n = NetworkManager.Instance;
-        if (n == null) return;
-
-        textServer.text = "IsServer = " + (n.IsServer);
-        textServer.color = n.IsServer ? Color.green : Color.red;
-        textClient.text = "IsClient = " + (n.IsClient);
-        textClient.color = n.IsClient ? Color.green : Color.red;
-        textHost.text = "IsHost = " + (n.IsHost);
-        textHost.color = n.IsHost ? Color.green : Color.red;
+        if (attachedToPlayerId != 0 && timeElapsedSinceLastTick >= (1f/maxTickRate))
+        {
+            timeElapsedSinceLastTick = 0;
+            Debug.Log($"x = {x}, y = {y}");
+            GameStateManager.Move(gameObject.transform.position, gameObject.transform.rotation);
+        }
     }
 
-    private void ToggleServer()
+    public void AttachToPlayer(byte id)
     {
-        NetworkManager n = NetworkManager.Instance;
-        if (n == null) return;
-
-        if (n.IsServer)
-            n.StopServer();
-        else
-            n.StartServer();
-    }
-
-    private void ToggleClient()
-    {
-        NetworkManager n = NetworkManager.Instance;
-        if (n == null) return;
-
-        if (n.IsClient)
-            n.StopClient();
-        else
-            n.StartClient();
-    }
-
-    public void ToggleHost()
-    {
-        NetworkManager n = NetworkManager.Instance;
-        if (n == null) return;
-
-        if (n.IsHost)
-            n.StopHost();
-        else
-            n.StartHost();
+        attachedToPlayerId = id;
     }
 }

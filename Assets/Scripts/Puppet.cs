@@ -5,13 +5,13 @@ using Assets.Scripts.GameState;
 
 public class Puppet : MonoBehaviour
 {
-    int subscribedPlayerId = 0;
+    byte subscribedPlayerId = 0;
 
     // Update is called once per frame
     void Update()
     {
         PlayerState player;
-        if (GameStateManager.GetState().players.TryGetValue(subscribedPlayerId, out player))
+        if (GameStateManager.Instance.gameState.players.TryGetValue(subscribedPlayerId, out player))
         {
             transform.position = player.position;
             transform.rotation = player.rotation;
@@ -19,7 +19,7 @@ public class Puppet : MonoBehaviour
         else Destroy(gameObject);
     }
 
-    public void SubscribeToPlayerId(int id)
+    public void SubscribeToPlayerId(byte id)
     {
         subscribedPlayerId = id;
     }

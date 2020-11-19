@@ -163,12 +163,22 @@ namespace RetardedNetworking
         {
             _clientPacketHandlers = new Dictionary<PacketType, ClientPacketHandler>() {
                 { PacketType.GIVE_CLIENT_ID, ClientHandler.GetMyClientId },
-                { PacketType.GIVE_CLIENT_GAME_STATE, ClientHandler.GetGameState }
+                { PacketType.GIVE_CLIENT_GAME_STATE, ClientHandler.GetGameState },
+                { PacketType.CLIENT_MOVE, ClientHandler.ClientMoved }
 
             };
             _serverPacketHandlers = new Dictionary<PacketType, ServerPacketHandler>(){
-                { PacketType.THANKS, ServerHandler.ClientSaidThanks }
+                { PacketType.THANKS, ServerHandler.ClientSaidThanks },
+                { PacketType.CLIENT_MOVE, ServerHandler.ClientMoved }
             };
+        }
+
+        public void ClientMove(Vector3 position, Quaternion rotation)
+        {
+            Packet packet = new Packet(PacketType.CLIENT_MOVE);
+            packet.Write(position);
+            packet.Write(rotation);
+            _client.SendPacketToServer(packet);
         }
     }
 }

@@ -10,8 +10,25 @@ namespace RetardedNetworking
             Log($"The client {packet.SenderClientId} said thanks.");
             GameStateManager.UpsertPlayer(packet.SenderClientId, Vector3.zero, Quaternion.identity);
             Packet gameInfo = new Packet(PacketType.GIVE_CLIENT_GAME_STATE);
-            gameInfo.Write(GameStateManager.Instance.gameState);
+            GameStateManager.Instance.gameState.currentPlayerId = packet.SenderClientId;
+            gameInfo.WriteGameState(GameStateManager.Instance.gameState);
             server.SendPacketToAllClients(gameInfo);
+            GameStateManager.Instance.gameState.currentPlayerId = ClientIdsManager.SERVER_CLIENT_ID;
+        }
+
+        public static void ClientMoved(Packet packet, Server server, Client client)
+        {
+            var clientId = packet.SenderClientId;
+            var position = packet.ReadVector3();
+            var rotation = packet.ReadQuaternion();
+
+            GameStateManager.UpsertPlayer(clientId, position, rotation);
+
+            Packet clientPosition = new Packet(PacketType.CLIENT_MOVE);
+            clientPosition.Write(clientId);
+            clientPosition.Write(position);
+            clientPosition.Write(rotation);
+            server.SendPacketToAllClients(clientPosition);
         }
 
         private static void Log(string str)
