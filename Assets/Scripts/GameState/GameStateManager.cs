@@ -38,7 +38,6 @@ namespace Assets.Scripts.GameState
                 PlayerState playerState = kvp.Value;
                 if (!playersReconciliation.ContainsKey(kvp.Key))
                 {
-                    Debug.Log($"{playerState.id} == {gameState.currentPlayerId}");
                     GameObject prefab = playerState.id == gameState.currentPlayerId ? playerPrefab : puppetPrefab;
                     GameObject go = Instantiate(prefab, playerState.position, playerState.rotation, playersContainer);
                     Puppet puppet = go.GetComponent<Puppet>();
@@ -47,6 +46,19 @@ namespace Assets.Scripts.GameState
                     if (playerInput) playerInput.AttachToPlayer(playerState.id);
                     playersReconciliation.Add(kvp.Key, go);
                 }
+            }
+
+            List<byte> playersIdsToRemove = new List<byte>();
+            foreach (KeyValuePair<byte, GameObject> kvp in playersReconciliation)
+            {
+                if (!gameState.players.ContainsKey(kvp.Key))
+                {
+                    playersIdsToRemove.Add(kvp.Key);
+                }
+            }
+            foreach (byte playerId in playersIdsToRemove)
+            {
+                playersReconciliation.Remove(playerId);
             }
         }
 
@@ -72,6 +84,12 @@ namespace Assets.Scripts.GameState
             gameState.players[playerId].position = position;
             gameState.players[playerId].rotation = rotation;
             RetardedNetworking.NetworkManager.Instance.ClientMove(position, rotation);
+        }
+
+        public static void Reset()
+        {
+            Instance.gameState = new GameState();
+            Instance.playersReconciliation.Clear();
         }
     }
 }

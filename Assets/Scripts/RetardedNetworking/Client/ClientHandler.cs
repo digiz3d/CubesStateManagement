@@ -10,8 +10,8 @@ namespace RetardedNetworking
             byte myId = packet.ReadByte();
             client.Id = myId;
             GameStateManager.SetCurrentPlayerId(myId);
-            Log($"The server send me my id = {myId}");
             Packet thanks = new Packet(PacketType.THANKS);
+            thanks.Write(myId);
             client.SendPacketToServer(thanks);
         }
 
@@ -22,12 +22,7 @@ namespace RetardedNetworking
 
         public static void ClientMoved(Packet packet, Server server, Client client)
         {
-            var gameState = GameStateManager.Instance.gameState;
-            var playerId = packet.ReadByte();
-            var position = packet.ReadVector3();
-            var rotation = packet.ReadQuaternion();
-            gameState.players[playerId].position = position;
-            gameState.players[playerId].rotation = rotation;
+            GameStateManager.UpsertPlayer(packet.ReadByte(), packet.ReadVector3(), packet.ReadQuaternion());
         }
 
         private static void Log(string str)

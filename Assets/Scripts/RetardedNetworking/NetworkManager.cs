@@ -1,5 +1,6 @@
-﻿using UnityEngine;
+﻿using Assets.Scripts.GameState;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace RetardedNetworking
 {
@@ -83,6 +84,7 @@ namespace RetardedNetworking
         {
             if (IsStarted) return;
 
+            GameStateManager.Reset();
             InitializePacketHandlers();
             IsServer = true;
             _server = new Server(27015);
@@ -96,12 +98,14 @@ namespace RetardedNetworking
             IsServer = false;
             _server.Stop();
             _server = null;
+            GameStateManager.Reset();
         }
 
         public void StartClient()
         {
             if (IsStarted) return;
 
+            GameStateManager.Reset();
             InitializePacketHandlers();
             IsClient = true;
             _client = new Client("127.0.0.1", 27015);
@@ -110,16 +114,18 @@ namespace RetardedNetworking
         public void StopClient()
         {
             if (!IsClient) return;
-            IsClient = false;
 
+            IsClient = false;
             _client.Stop();
             _client = null;
+            GameStateManager.Reset();
         }
 
         public void StartHost()
         {
             if (IsStarted) return;
 
+            GameStateManager.Reset();
             InitializePacketHandlers();
             IsHost = true;
             _server = new Server(27015)
@@ -129,6 +135,7 @@ namespace RetardedNetworking
                     _client = new Client("127.0.0.1", 27015);
                 }
             };
+
         }
 
         public void StopHost()
@@ -140,6 +147,7 @@ namespace RetardedNetworking
             _client = null;
             _server.Stop();
             _server = null;
+            GameStateManager.Reset();
         }
 
 

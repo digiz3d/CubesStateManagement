@@ -4,7 +4,7 @@ using Assets.Scripts.GameState;
 public class PlayerInput : MonoBehaviour
 {
     byte attachedToPlayerId;
-    const float maxTickRate = 128f;
+    const float tickrate = 10f;
     float timeElapsedSinceLastTick = 0;
 
     void Update()
@@ -16,7 +16,7 @@ public class PlayerInput : MonoBehaviour
 
         timeElapsedSinceLastTick += Time.deltaTime;
 
-        if (attachedToPlayerId != 0 && timeElapsedSinceLastTick >= (1f/maxTickRate))
+        if (attachedToPlayerId != 0 && timeElapsedSinceLastTick >= (1f/tickrate))
         {
             timeElapsedSinceLastTick = 0;
             Debug.Log($"x = {x}, y = {y}");

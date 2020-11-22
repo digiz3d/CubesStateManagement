@@ -9,7 +9,7 @@ namespace RetardedNetworking
 {
     public class Server
     {
-        private List<ServerClient> _clientsList = new List<ServerClient>();
+        private Dictionary<byte, ServerClient> _clients = new Dictionary<byte, ServerClient>();
         private Thread _serverThread;
         private bool _stopping = false;
         public delegate void OnServerReadyCallback();
@@ -20,12 +20,14 @@ namespace RetardedNetworking
             _serverThread = new Thread(() =>
             {
                 _stopping = false;
+                ClientIdsManager idsManager = new ClientIdsManager();
                 Debug.Log("[Server Thread] Hi.");
 
-                TcpListener listener = new TcpListener(IPAddress.Any, port);
+                TcpListener listener = TcpListener.Create(27015);
 
                 listener.Start();
                 onServerReady?.Invoke();
+
                 while (!_stopping)
                 {
                     while (listener.Pending())
@@ -35,25 +37,25 @@ namespace RetardedNetworking
 
                         try
                         {
-                            byte newClientId = ClientIdsManager.GetAvailableId();
+                            byte newClientId = idsManager.GetAvailableId();
                             ServerClient client = new ServerClient(newClientId, tcpListener);
-                            _clientsList.Add(client);
+                            _clients.Add(newClientId, client);
                             Packet clientId = new Packet(PacketType.GIVE_CLIENT_ID);
                             clientId.Write(newClientId);
                             SendPacketToClient(clientId, client);
                         }
                         catch (Exception e)
                         {
+                            Debug.Log("[Server thread] an exception occured.");
                             Debug.Log(e.Message);
                             Debug.Log(e.Source);
                             Debug.Log(e.StackTrace);
                         }
                     }
 
-                    _clientsList.RemoveAll(client => client == null);
-
-                    foreach (ServerClient client in _clientsList)
+                    foreach (KeyValuePair<byte, ServerClient> kvp in _clients)
                     {
+                        ServerClient client = kvp.Value;
                         NetworkStream stream = client.NetworkStream;
 
                         lock (client.packetsToSend)
@@ -100,12 +102,13 @@ namespace RetardedNetworking
             _stopping = true;
             _serverThread.Join();
             _serverThread = null;
-            _clientsList.Clear();
+            _clients.Clear();
         }
 
         public void SendPacketToClient(Packet packet, byte clientId)
         {
-            SendPacketToClient(packet, _clientsList.Find(client => client.Id == clientId));
+            ServerClient client = _clients[clientId];
+            SendPacketToClient(packet, client);
         }
 
         public void SendPacketToClient(Packet packet, ServerClient client)
@@ -118,11 +121,11 @@ namespace RetardedNetworking
 
         public void SendPacketToAllClients(Packet packet)
         {
-            foreach (ServerClient client in _clientsList)
+            foreach (KeyValuePair<byte, ServerClient> kvp in _clients)
             {
-                lock (client.packetsToSend)
+                lock (kvp.Value.packetsToSend)
                 {
-                    client.packetsToSend.Enqueue(packet);
+                    kvp.Value.packetsToSend.Enqueue(packet);
                 }
             }
         }

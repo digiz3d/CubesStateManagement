@@ -7,7 +7,9 @@ namespace RetardedNetworking
     {
         public static void ClientSaidThanks(Packet packet, Server server, Client client)
         {
-            Log($"The client {packet.SenderClientId} said thanks.");
+            byte clientConfirmedId = packet.ReadByte();
+            if (clientConfirmedId != packet.SenderClientId) Debug.Log($"The client {packet.SenderClientId} is lying about his identity !");
+            Log($"The client {clientConfirmedId} said thanks.");
             GameStateManager.UpsertPlayer(packet.SenderClientId, Vector3.zero, Quaternion.identity);
             Packet gameInfo = new Packet(PacketType.GIVE_CLIENT_GAME_STATE);
             GameStateManager.Instance.gameState.currentPlayerId = packet.SenderClientId;
