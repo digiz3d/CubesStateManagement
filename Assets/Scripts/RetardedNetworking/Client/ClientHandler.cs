@@ -1,5 +1,6 @@
 ﻿using Assets.Scripts.GameState;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace RetardedNetworking
 {
@@ -20,9 +21,16 @@ namespace RetardedNetworking
             GameStateManager.SetGameState(packet.ReadGameState());
         }
 
-        public static void ClientMoved(Packet packet, Server server, Client client)
+        public static void ClientsTransforms(Packet packet, Server server, Client client)
         {
-            GameStateManager.UpsertPlayer(packet.ReadByte(), packet.ReadVector3(), packet.ReadQuaternion());
+            float serverTime = packet.ReadFloat();
+            Dictionary<byte, PlayerState> players = packet.ReadPlayersDictionary();
+            foreach (KeyValuePair<byte, PlayerState> kvp in players)
+            {
+                if (kvp.Key == GameStateManager.Instance.gameState.currentPlayerId) continue;
+
+                GameStateManager.Instance.gameState.UpdatePlayerPosition(kvp.Key, serverTime, kvp.Value.Interpolate(1f).position, kvp.Value.Interpolate(1f).rotation);
+            }
         }
 
         private static void Log(string str)

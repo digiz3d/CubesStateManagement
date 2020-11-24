@@ -10,8 +10,9 @@ public class Puppet : MonoBehaviour
         PlayerState player;
         if (GameStateManager.Instance.gameState.players.TryGetValue(subscribedPlayerId, out player))
         {
-            transform.position = player.position;
-            transform.rotation = player.rotation;
+            PlayerState.TransformState interpolated = player.Interpolate(Time.unscaledTime);
+            transform.position = interpolated.position;
+            transform.rotation = interpolated.rotation;
         }
         else Destroy(gameObject);
     }

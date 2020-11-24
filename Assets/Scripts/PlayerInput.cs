@@ -3,8 +3,10 @@ using Assets.Scripts.GameState;
 
 public class PlayerInput : MonoBehaviour
 {
+    readonly float speed = 0.01f;
+
     byte attachedToPlayerId;
-    const float tickrate = 10f;
+    const float tickrate = 2f;
     float timeElapsedSinceLastTick = 0;
 
     void Update()
@@ -12,13 +14,13 @@ public class PlayerInput : MonoBehaviour
         float x = Input.GetAxis("Horizontal");
         float y = Input.GetAxis("Vertical");
 
-        gameObject.transform.Translate(x, 0, y);
+        gameObject.transform.Translate(x * speed, 0, y * speed);
 
-        timeElapsedSinceLastTick += Time.deltaTime;
+        timeElapsedSinceLastTick += Time.unscaledDeltaTime;
 
-        if (attachedToPlayerId != 0 && timeElapsedSinceLastTick >= (1f/tickrate))
+        if (attachedToPlayerId != 0 && timeElapsedSinceLastTick >= (1f / tickrate))
         {
-            timeElapsedSinceLastTick = 0;
+            timeElapsedSinceLastTick = 0; // maybe (1f/tickrate) - timeElapsedSinceLastTick;
             Debug.Log($"x = {x}, y = {y}");
             GameStateManager.Move(gameObject.transform.position, gameObject.transform.rotation);
         }

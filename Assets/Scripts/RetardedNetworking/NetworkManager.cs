@@ -35,12 +35,25 @@ namespace RetardedNetworking
 
         public bool IsHost { get; internal set; }
 
-        private bool IsStarted => IsHost;
-        //private bool IsStarted => IsClient || IsHost || IsServer;
-
+        private bool IsStarted => IsClient || IsHost || IsServer;
+        public float tickrate = 2f;
+        float timeElapsedSinceLastTick = 0f;
 
         private void Update()
         {
+            if (_server != null)
+            {
+                timeElapsedSinceLastTick += Time.unscaledDeltaTime;
+                if (timeElapsedSinceLastTick >= (1f / tickrate))
+                {
+                    timeElapsedSinceLastTick = 0;
+                    Packet clientTransformSnapshot = new Packet(PacketType.CLIENTS_TRANSFORMS);
+                    clientTransformSnapshot.Write(Time.unscaledTime);
+                    clientTransformSnapshot.WritePlayersDictionary(GameStateManager.Instance.gameState.players);
+                    _server.SendPacketToAllClients(clientTransformSnapshot);
+                }
+            }
+
             if (_clientPacketHandlers.Count > 0)
             {
                 lock (_clientReceivedPackets)
@@ -172,7 +185,7 @@ namespace RetardedNetworking
             _clientPacketHandlers = new Dictionary<PacketType, ClientPacketHandler>() {
                 { PacketType.GIVE_CLIENT_ID, ClientHandler.GetMyClientId },
                 { PacketType.GIVE_CLIENT_GAME_STATE, ClientHandler.GetGameState },
-                { PacketType.CLIENT_MOVE, ClientHandler.ClientMoved }
+                { PacketType.CLIENTS_TRANSFORMS, ClientHandler.ClientsTransforms }
 
             };
             _serverPacketHandlers = new Dictionary<PacketType, ServerPacketHandler>(){

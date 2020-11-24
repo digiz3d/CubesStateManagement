@@ -148,16 +148,12 @@ namespace RetardedNetworking
             return new Quaternion(x, y, z, w);
         }
 
-
-
-
         public void WriteGameState(GameState gameState)
         {
             Write(gameState.currentPlayerId);
             WritePlayersDictionary(gameState.players);
             Write(gameState.serverName);
         }
-
         public GameState ReadGameState()
         {
             byte currentPlayerId = ReadByte();
@@ -182,7 +178,6 @@ namespace RetardedNetworking
                 WritePlayerState(kvp.Value);
             }
         }
-
         public Dictionary<byte, PlayerState> ReadPlayersDictionary()
         {
             Dictionary<byte, PlayerState> dictionary = new Dictionary<byte, PlayerState>();
@@ -198,10 +193,9 @@ namespace RetardedNetworking
         public void WritePlayerState(PlayerState player)
         {
             Write(player.id);
-            Write(player.position);
-            Write(player.rotation);
+            Write(player.Interpolate(Time.unscaledTime).position);
+            Write(player.Interpolate(Time.unscaledTime).rotation);
         }
-
         public PlayerState ReadPlayerState()
         {
             byte id = ReadByte();

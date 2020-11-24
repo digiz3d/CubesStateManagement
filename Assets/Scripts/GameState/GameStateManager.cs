@@ -39,7 +39,8 @@ namespace Assets.Scripts.GameState
                 if (!playersReconciliation.ContainsKey(kvp.Key))
                 {
                     GameObject prefab = playerState.id == gameState.currentPlayerId ? playerPrefab : puppetPrefab;
-                    GameObject go = Instantiate(prefab, playerState.position, playerState.rotation, playersContainer);
+                    PlayerState.TransformState interpolated = playerState.Interpolate(1f);
+                    GameObject go = Instantiate(prefab, interpolated.position, interpolated.rotation, playersContainer);
                     Puppet puppet = go.GetComponent<Puppet>();
                     if (puppet) puppet.SubscribeToPlayerId(playerState.id);
                     PlayerInput playerInput = go.GetComponent<PlayerInput>();
@@ -67,11 +68,6 @@ namespace Assets.Scripts.GameState
             Instance.gameState.SetCurrentPlayerId(id);
         }
 
-        public static void UpsertPlayer(byte id, Vector3 position, Quaternion rotation)
-        {
-            Instance.gameState.UpsertPlayer(id, position, rotation);
-        }
-
         public static void SetGameState(GameState nextState)
         {
             Instance.gameState = nextState;
@@ -81,8 +77,7 @@ namespace Assets.Scripts.GameState
         {
             GameState gameState = Instance.gameState;
             byte playerId = gameState.currentPlayerId;
-            gameState.players[playerId].position = position;
-            gameState.players[playerId].rotation = rotation;
+            gameState.players[playerId].UpdateTransform(Time.unscaledTime, position, rotation);
             RetardedNetworking.NetworkManager.Instance.ClientMove(position, rotation);
         }
 

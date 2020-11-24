@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections.Generic;
 
 namespace Assets.Scripts.GameState
@@ -19,18 +20,19 @@ namespace Assets.Scripts.GameState
             currentPlayerId = id;
         }
 
-        public void UpsertPlayer(byte id, Vector3 position, Quaternion rotation)
+        public void UpdatePlayerPosition(byte id, float time, Vector3 position, Quaternion rotation)
         {
-            if (players.ContainsKey(id))
-            {
-                players[id].position = position;
-                players[id].rotation = rotation;
-            }
-            else
-            {
-                PlayerState p = new PlayerState(id, position, rotation);
-                players.Add(id, p);
-            }
+            if (!players.ContainsKey(id)) throw new Exception("This player id doesn't exists.");
+
+            players[id].UpdateTransform(time, position, rotation);
+        }
+
+        public void AddPlayer(byte id, Vector3 position, Quaternion rotation)
+        {
+            if (players.ContainsKey(id)) throw new Exception("This player id already exists.");
+
+            PlayerState p = new PlayerState(id, position, rotation);
+            players.Add(id, p);
         }
     }
 }

@@ -10,7 +10,7 @@ namespace RetardedNetworking
             byte clientConfirmedId = packet.ReadByte();
             if (clientConfirmedId != packet.SenderClientId) Debug.Log($"The client {packet.SenderClientId} is lying about his identity !");
             Log($"The client {clientConfirmedId} said thanks.");
-            GameStateManager.UpsertPlayer(packet.SenderClientId, Vector3.zero, Quaternion.identity);
+            GameStateManager.Instance.gameState.AddPlayer(packet.SenderClientId, Vector3.zero, Quaternion.identity);
             Packet gameInfo = new Packet(PacketType.GIVE_CLIENT_GAME_STATE);
             GameStateManager.Instance.gameState.currentPlayerId = packet.SenderClientId;
             gameInfo.WriteGameState(GameStateManager.Instance.gameState);
@@ -24,10 +24,11 @@ namespace RetardedNetworking
             var position = packet.ReadVector3();
             var rotation = packet.ReadQuaternion();
 
-            GameStateManager.UpsertPlayer(clientId, position, rotation);
+            GameStateManager.Instance.gameState.UpdatePlayerPosition(clientId, Time.unscaledTime, position, rotation);
 
             Packet clientPosition = new Packet(PacketType.CLIENT_MOVE);
             clientPosition.Write(clientId);
+            clientPosition.Write(Time.unscaledTime);
             clientPosition.Write(position);
             clientPosition.Write(rotation);
             server.SendPacketToAllClients(clientPosition);
