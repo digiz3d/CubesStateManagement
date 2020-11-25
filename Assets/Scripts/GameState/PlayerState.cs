@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using RetardedNetworking;
 
 namespace Assets.Scripts.GameState
 {
@@ -31,7 +32,6 @@ namespace Assets.Scripts.GameState
 
         public void UpdateTransform(float time, Vector3 pos, Quaternion rot)
         {
-            Debug.Log($"time = {time}");
             transformUpdates.Add(new TransformState(time, pos, rot));
 
             while (transformUpdates.Count > 3)
@@ -40,7 +40,7 @@ namespace Assets.Scripts.GameState
             }
         }
 
-        private TransformState GetLastTransformState()
+        public TransformState GetLastTransformState()
         {
             if (transformUpdates.Count == 0)
                 return new TransformState(0, Vector3.zero, Quaternion.identity);
@@ -48,25 +48,27 @@ namespace Assets.Scripts.GameState
             return transformUpdates[transformUpdates.Count - 1];
         }
 
-        private TransformState GetPreviousTransformState()
+        private bool GetTransformToLerp(float renderingTime, out TransformState first, out TransformState second)
         {
-            if (transformUpdates.Count <= 1)
-                return GetLastTransformState();
-
-            return transformUpdates[transformUpdates.Count - 2];
+            first = transformUpdates.FindLast(t => t.ms <= renderingTime);
+            second = transformUpdates.Find(t => t.ms > renderingTime);
+            if (first == null || second == null) return false;
+            return true;
         }
 
-        public TransformState Interpolate(float factor)
+        public TransformState Interpolate(float currentTime)
         {
-            TransformState lastTS = GetLastTransformState();
-            TransformState previousTS = GetPreviousTransformState();
+            float renderingTime = currentTime - (2 * (1f / NetworkManager.tickrate));
+            if (!GetTransformToLerp(renderingTime, out TransformState firstTs, out TransformState lastTs))
+                return GetLastTransformState();
 
-            float interpRatio = (factor - lastTS.ms) / 2f;
-            Debug.Log($"{factor}-{lastTS.ms}={interpRatio}");
+            float interpRatio = (currentTime - firstTs.ms) / (lastTs.ms - firstTs.ms); // TO FIX ! its wrong !
+            Debug.Log($"We found values to lerp :) {currentTime} : {renderingTime} => {firstTs.ms} & {lastTs.ms}");
+            Debug.Log($"interpolation = {interpRatio}");
 
-            float ms = Mathf.Lerp(previousTS.ms, lastTS.ms, interpRatio);
-            Vector3 interPos = Vector3.Lerp(previousTS.position, lastTS.position, interpRatio);
-            Quaternion interRot = Quaternion.Lerp(previousTS.rotation, lastTS.rotation, interpRatio);
+            float ms = Mathf.Lerp(firstTs.ms, lastTs.ms, interpRatio);
+            Vector3 interPos = Vector3.Lerp(firstTs.position, lastTs.position, interpRatio);
+            Quaternion interRot = Quaternion.Lerp(firstTs.rotation, lastTs.rotation, interpRatio);
             return new TransformState(ms, interPos, interRot);
         }
     }

@@ -6,7 +6,7 @@
         THANKS,
         GIVE_CLIENT_GAME_STATE,
         SPAWN_PLAYER,
-        CLIENT_MOVE,
+        CLIENT_TRANSFORM,
         CLIENTS_TRANSFORMS
     }
 }

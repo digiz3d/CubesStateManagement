@@ -9,6 +9,7 @@ namespace RetardedNetworking
         public static void GetMyClientId(Packet packet, Server server, Client client)
         {
             byte myId = packet.ReadByte();
+            Debug.Log($"my id={myId}");
             client.Id = myId;
             GameStateManager.SetCurrentPlayerId(myId);
             Packet thanks = new Packet(PacketType.THANKS);
@@ -29,7 +30,7 @@ namespace RetardedNetworking
             {
                 if (kvp.Key == GameStateManager.Instance.gameState.currentPlayerId) continue;
 
-                GameStateManager.Instance.gameState.UpdatePlayerPosition(kvp.Key, serverTime, kvp.Value.Interpolate(1f).position, kvp.Value.Interpolate(1f).rotation);
+                GameStateManager.Instance.gameState.UpdatePlayerPosition(kvp.Key, serverTime, kvp.Value.GetLastTransformState().position, kvp.Value.GetLastTransformState().rotation);
             }
         }
 

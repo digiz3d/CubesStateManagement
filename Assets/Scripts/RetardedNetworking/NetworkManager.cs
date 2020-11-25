@@ -21,36 +21,50 @@ namespace RetardedNetworking
         }
         #endregion Singleton
 
-        public bool IsClient { get; internal set; }
+        public bool IsClient { get; private set; }
         private Client _client;
         private Queue<Packet> _clientReceivedPackets = new Queue<Packet>();
         private Dictionary<PacketType, ClientPacketHandler> _clientPacketHandlers = new Dictionary<PacketType, ClientPacketHandler>();
         private delegate void ClientPacketHandler(Packet packet, Server server, Client client);
 
-        public bool IsServer { get; internal set; }
+        public bool IsServer { get; private set; }
         private Server _server;
         private Queue<Packet> _serverReceivedpackets = new Queue<Packet>();
         private Dictionary<PacketType, ServerPacketHandler> _serverPacketHandlers = new Dictionary<PacketType, ServerPacketHandler>();
         private delegate void ServerPacketHandler(Packet packet, Server server, Client client);
 
-        public bool IsHost { get; internal set; }
+        public bool IsHost { get; private set; }
 
         private bool IsStarted => IsClient || IsHost || IsServer;
-        public float tickrate = 2f;
-        float timeElapsedSinceLastTick = 0f;
+        public static readonly float tickrate = 1f;
+        float serverTimeElapsedSinceLastTick = 0f;
+        float clientTimeElapsedSinceLastTick = 0f;
 
         private void Update()
         {
             if (_server != null)
             {
-                timeElapsedSinceLastTick += Time.unscaledDeltaTime;
-                if (timeElapsedSinceLastTick >= (1f / tickrate))
+                serverTimeElapsedSinceLastTick += Time.unscaledDeltaTime;
+                if (serverTimeElapsedSinceLastTick >= (1f / tickrate))
                 {
-                    timeElapsedSinceLastTick = 0;
-                    Packet clientTransformSnapshot = new Packet(PacketType.CLIENTS_TRANSFORMS);
-                    clientTransformSnapshot.Write(Time.unscaledTime);
-                    clientTransformSnapshot.WritePlayersDictionary(GameStateManager.Instance.gameState.players);
-                    _server.SendPacketToAllClients(clientTransformSnapshot);
+                    serverTimeElapsedSinceLastTick -= (1f / tickrate);
+                    Packet clientTransformsSnapshot = new Packet(PacketType.CLIENTS_TRANSFORMS);
+                    clientTransformsSnapshot.Write(Time.unscaledTime);
+                    clientTransformsSnapshot.WritePlayersDictionary(GameStateManager.Instance.gameState.players);
+                    _server.SendPacketToAllClients(clientTransformsSnapshot);
+                }
+            }
+            if (_client != null)
+            {
+                clientTimeElapsedSinceLastTick += Time.unscaledDeltaTime;
+                if (clientTimeElapsedSinceLastTick >= (1f / tickrate))
+                {
+                    clientTimeElapsedSinceLastTick -= (1f / tickrate);
+                    Packet clientTransformSnapshot = new Packet(PacketType.CLIENT_TRANSFORM);
+                    PlayerState.TransformState myTransform = GameStateManager.GetMyLastPlayerTransform();
+                    clientTransformSnapshot.Write(myTransform.position);
+                    clientTransformSnapshot.Write(myTransform.rotation);
+                    _client.SendPacketToServer(clientTransformSnapshot);
                 }
             }
 
@@ -190,16 +204,8 @@ namespace RetardedNetworking
             };
             _serverPacketHandlers = new Dictionary<PacketType, ServerPacketHandler>(){
                 { PacketType.THANKS, ServerHandler.ClientSaidThanks },
-                { PacketType.CLIENT_MOVE, ServerHandler.ClientMoved }
+                { PacketType.CLIENT_TRANSFORM, ServerHandler.ClientTransform }
             };
-        }
-
-        public void ClientMove(Vector3 position, Quaternion rotation)
-        {
-            Packet packet = new Packet(PacketType.CLIENT_MOVE);
-            packet.Write(position);
-            packet.Write(rotation);
-            _client.SendPacketToServer(packet);
         }
     }
 }

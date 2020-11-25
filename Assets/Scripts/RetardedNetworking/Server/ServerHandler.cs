@@ -18,20 +18,13 @@ namespace RetardedNetworking
             GameStateManager.Instance.gameState.currentPlayerId = ClientIdsManager.SERVER_CLIENT_ID;
         }
 
-        public static void ClientMoved(Packet packet, Server server, Client client)
+        public static void ClientTransform(Packet packet, Server server, Client client)
         {
             var clientId = packet.SenderClientId;
             var position = packet.ReadVector3();
             var rotation = packet.ReadQuaternion();
 
             GameStateManager.Instance.gameState.UpdatePlayerPosition(clientId, Time.unscaledTime, position, rotation);
-
-            Packet clientPosition = new Packet(PacketType.CLIENT_MOVE);
-            clientPosition.Write(clientId);
-            clientPosition.Write(Time.unscaledTime);
-            clientPosition.Write(position);
-            clientPosition.Write(rotation);
-            server.SendPacketToAllClients(clientPosition);
         }
 
         private static void Log(string str)

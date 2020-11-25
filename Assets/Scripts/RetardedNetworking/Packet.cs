@@ -184,7 +184,6 @@ namespace RetardedNetworking
             int len = ReadInt();
             for (int i = 0; i < len; i++)
             {
-
                 dictionary.Add(ReadByte(), ReadPlayerState());
             }
             return dictionary;
@@ -193,8 +192,8 @@ namespace RetardedNetworking
         public void WritePlayerState(PlayerState player)
         {
             Write(player.id);
-            Write(player.Interpolate(Time.unscaledTime).position);
-            Write(player.Interpolate(Time.unscaledTime).rotation);
+            Write(player.GetLastTransformState().position);
+            Write(player.GetLastTransformState().rotation);
         }
         public PlayerState ReadPlayerState()
         {

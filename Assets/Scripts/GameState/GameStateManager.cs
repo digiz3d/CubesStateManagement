@@ -38,8 +38,9 @@ namespace Assets.Scripts.GameState
                 PlayerState playerState = kvp.Value;
                 if (!playersReconciliation.ContainsKey(kvp.Key))
                 {
+                    Debug.Log($"id comparison : playerState.id={playerState.id} & gameState.currentPlayerId={gameState.currentPlayerId}");
                     GameObject prefab = playerState.id == gameState.currentPlayerId ? playerPrefab : puppetPrefab;
-                    PlayerState.TransformState interpolated = playerState.Interpolate(1f);
+                    PlayerState.TransformState interpolated = playerState.GetLastTransformState();
                     GameObject go = Instantiate(prefab, interpolated.position, interpolated.rotation, playersContainer);
                     Puppet puppet = go.GetComponent<Puppet>();
                     if (puppet) puppet.SubscribeToPlayerId(playerState.id);
@@ -78,13 +79,18 @@ namespace Assets.Scripts.GameState
             GameState gameState = Instance.gameState;
             byte playerId = gameState.currentPlayerId;
             gameState.players[playerId].UpdateTransform(Time.unscaledTime, position, rotation);
-            RetardedNetworking.NetworkManager.Instance.ClientMove(position, rotation);
         }
 
         public static void Reset()
         {
             Instance.gameState = new GameState();
             Instance.playersReconciliation.Clear();
+        }
+
+        public static PlayerState.TransformState GetMyLastPlayerTransform()
+        {
+            byte myPlayerId = Instance.gameState.currentPlayerId;
+            return Instance.gameState.players[myPlayerId].GetLastTransformState();
         }
     }
 }
