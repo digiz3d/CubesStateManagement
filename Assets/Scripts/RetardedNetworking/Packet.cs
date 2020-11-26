@@ -150,13 +150,12 @@ namespace RetardedNetworking
 
         public void WriteGameState(GameState gameState)
         {
-            Write(gameState.currentPlayerId);
             WritePlayersDictionary(gameState.players);
             Write(gameState.serverName);
         }
         public GameState ReadGameState()
         {
-            byte currentPlayerId = ReadByte();
+            byte currentPlayerId = GameStateManager.Instance.gameState.currentPlayerId;
             Dictionary<byte, PlayerState> players = ReadPlayersDictionary();
             string serverName = ReadString();
 

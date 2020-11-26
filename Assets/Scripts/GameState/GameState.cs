@@ -15,11 +15,6 @@ namespace Assets.Scripts.GameState
             players = new Dictionary<byte, PlayerState>();
         }
 
-        public void SetCurrentPlayerId(byte id)
-        {
-            currentPlayerId = id;
-        }
-
         public void UpdatePlayerPosition(byte id, float time, Vector3 position, Quaternion rotation)
         {
             if (!players.ContainsKey(id)) throw new Exception("This player id doesn't exists.");

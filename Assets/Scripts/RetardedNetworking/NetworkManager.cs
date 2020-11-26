@@ -36,35 +36,31 @@ namespace RetardedNetworking
         public bool IsHost { get; private set; }
 
         private bool IsStarted => IsClient || IsHost || IsServer;
-        public static readonly float tickrate = 1f;
-        float serverTimeElapsedSinceLastTick = 0f;
-        float clientTimeElapsedSinceLastTick = 0f;
+        public const float tickrate = 1f;
+        public const float tickTime = (1f / tickrate);
+        float timeElapsedSinceLastTick = 0;
 
         private void Update()
         {
-            if (_server != null)
+            timeElapsedSinceLastTick += Time.unscaledDeltaTime;
+            if (timeElapsedSinceLastTick >= tickTime)
             {
-                serverTimeElapsedSinceLastTick += Time.unscaledDeltaTime;
-                if (serverTimeElapsedSinceLastTick >= (1f / tickrate))
+                timeElapsedSinceLastTick -= tickTime;
+                if (_client != null)
                 {
-                    serverTimeElapsedSinceLastTick -= (1f / tickrate);
-                    Packet clientTransformsSnapshot = new Packet(PacketType.CLIENTS_TRANSFORMS);
-                    clientTransformsSnapshot.Write(Time.unscaledTime);
-                    clientTransformsSnapshot.WritePlayersDictionary(GameStateManager.Instance.gameState.players);
-                    _server.SendPacketToAllClients(clientTransformsSnapshot);
-                }
-            }
-            if (_client != null)
-            {
-                clientTimeElapsedSinceLastTick += Time.unscaledDeltaTime;
-                if (clientTimeElapsedSinceLastTick >= (1f / tickrate))
-                {
-                    clientTimeElapsedSinceLastTick -= (1f / tickrate);
                     Packet clientTransformSnapshot = new Packet(PacketType.CLIENT_TRANSFORM);
                     PlayerState.TransformState myTransform = GameStateManager.GetMyLastPlayerTransform();
                     clientTransformSnapshot.Write(myTransform.position);
                     clientTransformSnapshot.Write(myTransform.rotation);
                     _client.SendPacketToServer(clientTransformSnapshot);
+                }
+
+                if (_server != null)
+                {
+                    Packet clientTransformsSnapshot = new Packet(PacketType.CLIENTS_TRANSFORMS);
+                    clientTransformsSnapshot.Write(Time.unscaledTime);
+                    clientTransformsSnapshot.WritePlayersDictionary(GameStateManager.Instance.gameState.players);
+                    _server.SendPacketToAllClients(clientTransformsSnapshot);
                 }
             }
 

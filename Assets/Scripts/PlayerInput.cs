@@ -5,8 +5,6 @@ public class PlayerInput : MonoBehaviour
 {
     readonly float speed = 0.01f;
 
-    byte attachedToPlayerId;
-
     void Update()
     {
         float x = Input.GetAxis("Horizontal");
@@ -14,11 +12,7 @@ public class PlayerInput : MonoBehaviour
 
         gameObject.transform.Translate(x * speed, 0, y * speed);
 
-        GameStateManager.Move(gameObject.transform.position, gameObject.transform.rotation);
-    }
-
-    public void AttachToPlayer(byte id)
-    {
-        attachedToPlayerId = id;
+        byte playerId = GameStateManager.Instance.gameState.currentPlayerId;
+        GameStateManager.Instance.gameState.players[playerId].UpdateTransform(Time.unscaledTime, gameObject.transform.position, gameObject.transform.rotation);
     }
 }

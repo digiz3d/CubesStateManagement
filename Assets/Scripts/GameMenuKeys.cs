@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using RetardedNetworking;
+using Assets.Scripts.GameState;
 
 public class GameMenuKeys : MonoBehaviour
 {
@@ -34,8 +35,7 @@ public class GameMenuKeys : MonoBehaviour
         textClient.color = n.IsClient ? Color.green : Color.red;
         textHost.text = "IsHost = " + (n.IsHost);
         textHost.color = n.IsHost ? Color.green : Color.red;
-
-        textClientId.text = $"Client id = {Assets.Scripts.GameState.GameStateManager.Instance.gameState.currentPlayerId}";
+        textClientId.text = $"Client id = {GameStateManager.Instance.gameState.currentPlayerId}";
     }
 
     private void ToggleServer()

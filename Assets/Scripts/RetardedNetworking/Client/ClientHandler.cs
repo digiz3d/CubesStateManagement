@@ -11,7 +11,7 @@ namespace RetardedNetworking
             byte myId = packet.ReadByte();
             Debug.Log($"my id={myId}");
             client.Id = myId;
-            GameStateManager.SetCurrentPlayerId(myId);
+            GameStateManager.Instance.gameState.currentPlayerId = myId;
             Packet thanks = new Packet(PacketType.THANKS);
             thanks.Write(myId);
             client.SendPacketToServer(thanks);

@@ -44,8 +44,6 @@ namespace Assets.Scripts.GameState
                     GameObject go = Instantiate(prefab, interpolated.position, interpolated.rotation, playersContainer);
                     Puppet puppet = go.GetComponent<Puppet>();
                     if (puppet) puppet.SubscribeToPlayerId(playerState.id);
-                    PlayerInput playerInput = go.GetComponent<PlayerInput>();
-                    if (playerInput) playerInput.AttachToPlayer(playerState.id);
                     playersReconciliation.Add(kvp.Key, go);
                 }
             }
@@ -62,11 +60,6 @@ namespace Assets.Scripts.GameState
             {
                 playersReconciliation.Remove(playerId);
             }
-        }
-
-        public static void SetCurrentPlayerId(byte id)
-        {
-            Instance.gameState.SetCurrentPlayerId(id);
         }
 
         public static void SetGameState(GameState nextState)

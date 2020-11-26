@@ -62,9 +62,9 @@ namespace Assets.Scripts.GameState
             if (!GetTransformToLerp(renderingTime, out TransformState firstTs, out TransformState lastTs))
                 return GetLastTransformState();
 
-            float interpRatio = (currentTime - firstTs.ms) / (lastTs.ms - firstTs.ms); // TO FIX ! its wrong !
-            Debug.Log($"We found values to lerp :) {currentTime} : {renderingTime} => {firstTs.ms} & {lastTs.ms}");
-            Debug.Log($"interpolation = {interpRatio}");
+            float interpRatio = (renderingTime - firstTs.ms) / (lastTs.ms - firstTs.ms);
+            //Debug.Log("(currentTime - firstTs.ms) / (lastTs.ms - firstTs.ms) = interpRatio");
+            //Debug.Log($" ({renderingTime} - {firstTs.ms}) / ({lastTs.ms} - {firstTs.ms}) = {interpRatio}");
 
             float ms = Mathf.Lerp(firstTs.ms, lastTs.ms, interpRatio);
             Vector3 interPos = Vector3.Lerp(firstTs.position, lastTs.position, interpRatio);
