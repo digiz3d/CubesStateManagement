@@ -79,11 +79,5 @@ namespace Assets.Scripts.GameState
             Instance.gameState = new GameState();
             Instance.playersReconciliation.Clear();
         }
-
-        public static PlayerState.TransformState GetMyLastPlayerTransform()
-        {
-            byte myPlayerId = Instance.gameState.currentPlayerId;
-            return Instance.gameState.players[myPlayerId].GetLastTransformState();
-        }
     }
 }
