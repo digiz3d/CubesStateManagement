@@ -34,7 +34,7 @@ namespace Assets.Scripts.GameState
         {
             transformUpdates.Add(new TransformState(time, pos, rot));
 
-            while (transformUpdates.Count > 3)
+            while (transformUpdates.Count > 50)
             {
                 transformUpdates.RemoveAt(0);
             }
@@ -48,22 +48,30 @@ namespace Assets.Scripts.GameState
             return transformUpdates[transformUpdates.Count - 1];
         }
 
-        private bool GetTransformToLerp(float renderingTime, out TransformState first, out TransformState second)
+        private bool GetTransformsToLerp(float renderingTime, out TransformState first, out TransformState second)
         {
-            first = transformUpdates.FindLast(t => t.ms <= renderingTime);
-            second = transformUpdates.Find(t => t.ms > renderingTime);
+            first = transformUpdates.FindLast(t => t.ms < renderingTime);
+            second = transformUpdates.Find(t => t.ms >= renderingTime);
             if (first == null || second == null) return false;
             return true;
         }
 
         public TransformState Interpolate(float currentTime)
         {
-            float renderingTime = currentTime - (2 * (1f / NetworkManager.tickrate));
-            if (!GetTransformToLerp(renderingTime, out TransformState firstTs, out TransformState lastTs))
+            float renderingTime = currentTime - (2 * NetworkManager.tickTime);
+            string str = "";
+            foreach (TransformState s in transformUpdates)
+            {
+                str += s.ms + " - " + s.position + " - " + s.rotation + ",";
+            }
+            //Debug.Log($"Going to interpolate. {transformUpdates.Count} values : ({str}). rendering time = {renderingTime}\n");
+
+            
+            if (!GetTransformsToLerp(renderingTime, out TransformState firstTs, out TransformState lastTs))
                 return GetLastTransformState();
 
             float interpRatio = (renderingTime - firstTs.ms) / (lastTs.ms - firstTs.ms);
-            //Debug.Log("(currentTime - firstTs.ms) / (lastTs.ms - firstTs.ms) = interpRatio");
+            //Debug.Log("(renderingTime - firstTs.ms) / (lastTs.ms - firstTs.ms) = interpRatio");
             //Debug.Log($" ({renderingTime} - {firstTs.ms}) / ({lastTs.ms} - {firstTs.ms}) = {interpRatio}");
 
             float ms = Mathf.Lerp(firstTs.ms, lastTs.ms, interpRatio);

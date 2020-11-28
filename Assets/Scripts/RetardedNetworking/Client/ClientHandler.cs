@@ -24,13 +24,12 @@ namespace RetardedNetworking
 
         public static void ClientsTransforms(Packet packet, Server server, Client client)
         {
-            float serverTime = packet.ReadFloat();
             Dictionary<byte, PlayerState> players = packet.ReadPlayersDictionary();
             foreach (KeyValuePair<byte, PlayerState> kvp in players)
             {
                 if (kvp.Key == GameStateManager.Instance.gameState.currentPlayerId) continue;
 
-                GameStateManager.Instance.gameState.UpdatePlayerPosition(kvp.Key, serverTime, kvp.Value.GetLastTransformState().position, kvp.Value.GetLastTransformState().rotation);
+                GameStateManager.Instance.gameState.UpdatePlayerPosition(kvp.Key, Time.unscaledTime, kvp.Value.GetLastTransformState().position, kvp.Value.GetLastTransformState().rotation);
             }
         }
 

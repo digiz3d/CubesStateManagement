@@ -84,7 +84,7 @@ namespace RetardedNetworking
                         }
                     }
 
-                    Thread.Sleep(7);
+                    Thread.Sleep(1);
                 }
 
                 listener.Stop();

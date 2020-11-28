@@ -36,7 +36,7 @@ namespace RetardedNetworking
         public bool IsHost { get; private set; }
 
         private bool IsStarted => IsClient || IsHost || IsServer;
-        public const float tickrate = 1f;
+        public const float tickrate = 10f;
         public const float tickTime = (1f / tickrate);
         float timeElapsedSinceLastTick = 0;
 
@@ -58,7 +58,6 @@ namespace RetardedNetworking
                 if (_server != null)
                 {
                     Packet clientTransformsSnapshot = new Packet(PacketType.CLIENTS_TRANSFORMS);
-                    clientTransformsSnapshot.Write(Time.unscaledTime);
                     clientTransformsSnapshot.WritePlayersDictionary(GameStateManager.Instance.gameState.players);
                     _server.SendPacketToAllClients(clientTransformsSnapshot);
                 }

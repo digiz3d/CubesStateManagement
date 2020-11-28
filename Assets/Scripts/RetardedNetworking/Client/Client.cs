@@ -48,7 +48,7 @@ namespace RetardedNetworking
                         NetworkManager.Instance.ClientReceivePacket(packet);
                     }
 
-                    Thread.Sleep(7);
+                    Thread.Sleep(1);
                 }
 
                 tcpClient.Close();
