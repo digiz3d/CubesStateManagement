@@ -12,7 +12,7 @@ public class PlayerInput : MonoBehaviour
 
         gameObject.transform.Translate(x * speed, 0, y * speed);
 
-        byte playerId = GameStateManager.Instance.gameState.currentPlayerId;
+        byte playerId = GameStateManager.Instance.currentPlayerId;
         GameStateManager.Instance.gameState.players[playerId].UpdateTransform(Time.unscaledTime, gameObject.transform.position, gameObject.transform.rotation);
     }
 }

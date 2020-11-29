@@ -155,13 +155,11 @@ namespace RetardedNetworking
         }
         public GameState ReadGameState()
         {
-            byte currentPlayerId = GameStateManager.Instance.gameState.currentPlayerId;
             Dictionary<byte, PlayerState> players = ReadPlayersDictionary();
             string serverName = ReadString();
 
             return new GameState()
             {
-                currentPlayerId = currentPlayerId,
                 players = players,
                 serverName = serverName
             };
@@ -216,8 +214,6 @@ namespace RetardedNetworking
             byte[] data = new byte[dataLength];
             if (dataLength > 0)
                 stream.Read(data, 0, dataLength);
-
-            // Debug.Log($"headerBuffer = {BitConverter.ToString(headerBuffer)}, data = {BitConverter.ToString(data)} (dataLength={dataLength})");
 
             return new Packet(type, clientId, data);
         }

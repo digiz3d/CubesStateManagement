@@ -25,6 +25,7 @@ namespace Assets.Scripts.GameState
         public GameObject playerPrefab;
         public GameObject puppetPrefab;
         public Transform playersContainer;
+        public byte currentPlayerId = 0;
 
         void Start()
         {
@@ -38,8 +39,7 @@ namespace Assets.Scripts.GameState
                 PlayerState playerState = kvp.Value;
                 if (!playersReconciliation.ContainsKey(kvp.Key))
                 {
-                    Debug.Log($"id comparison : playerState.id={playerState.id} & gameState.currentPlayerId={gameState.currentPlayerId}");
-                    GameObject prefab = playerState.id == gameState.currentPlayerId ? playerPrefab : puppetPrefab;
+                    GameObject prefab = playerState.id == currentPlayerId ? playerPrefab : puppetPrefab;
                     PlayerState.TransformState interpolated = playerState.GetLastTransformState();
                     GameObject go = Instantiate(prefab, interpolated.position, interpolated.rotation, playersContainer);
                     Puppet puppet = go.GetComponent<Puppet>();
@@ -69,9 +69,8 @@ namespace Assets.Scripts.GameState
 
         public static void Move(Vector3 position, Quaternion rotation)
         {
-            GameState gameState = Instance.gameState;
-            byte playerId = gameState.currentPlayerId;
-            gameState.players[playerId].UpdateTransform(Time.unscaledTime, position, rotation);
+            byte playerId = Instance.currentPlayerId;
+            Instance.gameState.players[playerId].UpdateTransform(Time.unscaledTime, position, rotation);
         }
 
         public static void Reset()

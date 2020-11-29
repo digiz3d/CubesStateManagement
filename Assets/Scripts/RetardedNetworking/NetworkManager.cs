@@ -49,7 +49,7 @@ namespace RetardedNetworking
                 if (_client != null)
                 {
                     Packet clientTransformSnapshot = new Packet(PacketType.CLIENT_TRANSFORM);
-                    byte myPlayerId = GameStateManager.Instance.gameState.currentPlayerId;
+                    byte myPlayerId = GameStateManager.Instance.currentPlayerId;
                     if (GameStateManager.Instance.gameState.players.TryGetValue(myPlayerId, out PlayerState player))
                     {
                         PlayerState.TransformState myTransform = player.GetLastTransformState();

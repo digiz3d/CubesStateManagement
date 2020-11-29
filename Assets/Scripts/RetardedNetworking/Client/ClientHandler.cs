@@ -9,9 +9,8 @@ namespace RetardedNetworking
         public static void GetMyClientId(Packet packet, Server server, Client client)
         {
             byte myId = packet.ReadByte();
-            Debug.Log($"my id={myId}");
             client.Id = myId;
-            GameStateManager.Instance.gameState.currentPlayerId = myId;
+            GameStateManager.Instance.currentPlayerId = myId;
             Packet thanks = new Packet(PacketType.THANKS);
             thanks.Write(myId);
             client.SendPacketToServer(thanks);
@@ -27,7 +26,7 @@ namespace RetardedNetworking
             Dictionary<byte, PlayerState> players = packet.ReadPlayersDictionary();
             foreach (KeyValuePair<byte, PlayerState> kvp in players)
             {
-                if (kvp.Key == GameStateManager.Instance.gameState.currentPlayerId) continue;
+                if (kvp.Key == GameStateManager.Instance.currentPlayerId) continue;
 
                 GameStateManager.Instance.gameState.UpdatePlayerPosition(kvp.Key, Time.unscaledTime, kvp.Value.GetLastTransformState().position, kvp.Value.GetLastTransformState().rotation);
             }

@@ -6,7 +6,6 @@ namespace Assets.Scripts.GameState
 {
     public class GameState
     {
-        public byte currentPlayerId = 0;
         public Dictionary<byte, PlayerState> players;
         public string serverName = "My server";
 

@@ -35,7 +35,7 @@ public class GameMenuKeys : MonoBehaviour
         textClient.color = n.IsClient ? Color.green : Color.red;
         textHost.text = "IsHost = " + (n.IsHost);
         textHost.color = n.IsHost ? Color.green : Color.red;
-        textClientId.text = $"Client id = {GameStateManager.Instance.gameState.currentPlayerId}";
+        textClientId.text = $"Client id = {GameStateManager.Instance.currentPlayerId}";
     }
 
     private void ToggleServer()
