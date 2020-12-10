@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class PlayerRotate : MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
     float mouseSensitivity = 1f;
     float walkingSpeed = 5f;
